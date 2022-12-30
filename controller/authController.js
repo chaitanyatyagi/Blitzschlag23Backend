@@ -1,0 +1,143 @@
+const User = require("../model/userModel")
+const jwt = require("jsonwebtoken")
+const { promisify } = require("util")
+const sendEmail = require("../utils/sendEmail")
+
+exports.register = async (req, res, next) => {
+    const email = req.body.email
+    const password = req.body.password
+    const name = req.body.name
+    const user = await User.find({ email })
+    const numberOfUsers = await User.find().count()
+    if (!password || !name || !email) {
+        return res.status(400).json({
+            status: "error",
+            message: "Please fill all details!"
+        })
+    }
+    if (password.length < 8) {
+        return res.status(400).json({
+            status: "error",
+            message: "Password should contain more than 8 characters !"
+        })
+    }
+    if (user.length >= 1) {
+        return res.status(400).json({
+            status: "error",
+            message: "You are already registered !"
+        })
+    }
+
+    const blitzID = "Blitzschlag23" + req.body.name + numberOfUsers
+    const url = `${process.env.BASE_URL}users/Blitzschlag23/BlitzId`
+    await sendEmail(email, `<p><b>Malaviya National Institute of Technology Jaipur welcomes you for being a part of Blitzschlag 2023.</b></p><br></br><p>This is your 
+    blitzschlag 2023 ID - <b>${blitzID}</b></p>`, url)
+
+    const newUser = await User.create({
+        name: req.body.name,
+        email: req.body.email,
+        password: req.body.password,
+        blitzId: blitzID
+    })
+
+    const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
+        expiresIn: process.env.JWT_EXPIRES_IN
+    })
+
+    res.cookie('jwt', token)
+    return res.status(200).json({
+        status: "success",
+        token,
+        newUser
+    })
+}
+
+exports.login = async (req, res, next) => {
+    const user = await User.findOne({ email })
+    if (!user) {
+        return res.status(400).jsoon({
+            status: "error",
+            error: "Entered email is wrong !"
+        })
+    }
+    if (!(await bcrypt.compare(candidatePassword, userPassword))) {
+        return res.status(400).json({
+            status: "error",
+            error: "Entered password is wrong !"
+        })
+    }
+    const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
+        expiresIn: process.env.JWT_EXPIRES_IN
+    })
+    res.cookie('jwt', token)
+    return res.status(200).json({
+        status: "success",
+        token,
+        user
+    })
+}
+
+exports.forgortPassword = async (req, res, next) => {
+    const passOriginal = req.body.password
+    const passConfirm = req.body.confirmPassword
+
+    if (passConfirm != passOriginal) {
+        return res.status(400).json({
+            status: "error",
+            error: "Please enter same original and confirm password !"
+        })
+    }
+
+    const updatedUser = await User.updateOne({
+        email: req.body.email
+    },
+        {
+            $set: { password: req.body.passOriginal }
+        },
+        {
+            new: true,
+            runValidators: true,
+        })
+    if (updatedUser.length === 0) {
+        return res.status(400).json({
+            status: "error",
+            message: "You are not registered. Please register first !"
+        })
+    }
+    return res.status(200).json({
+        status: "success",
+        message: "Your password has been changed !",
+        updatedUser
+    })
+}
+
+exports.protect = async (req, res, next) => {
+    let token
+    if (req.cookies.jwt) {
+        token = req.cookies.jwt
+    }
+    if (!token) {
+        return res.status(400).json({
+            status: "error",
+            message: "You are not logged in. Please register if you are not registered yet, else directly login."
+        })
+    }
+    const decoded = await promisify(jwt.verify)(toke, process.env.JWT_SECRET)
+    const freshUser = await User.findById(decoded.id)
+    if (!freshUser) {
+        return res.status(401).json({
+            status: "error",
+            message: "This user doesn't exist !"
+        })
+    }
+    req.user = freshUser
+    next()
+}
+
+exports.logout = (req, res, next) => {
+    res.clearCookie('jwt')
+    return res.status(200).json({
+        status: "success",
+        message: "You are successfully logged out !"
+    })
+}
