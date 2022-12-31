@@ -43,6 +43,37 @@ mongoose.connection.on("error", (error) => {
 })
 
 app.use('/users', userRouter)
+
+const {initPayment, responsePayment} = require("./paytm/services/index");
+
+app.get("/paywithpaytm", (req, res) => {
+    console.log("payment requested");
+    initPayment(req.query.amount).then(
+        success => {
+            console.log(success);
+            res.json({
+                resultData: success,
+                paytmFinalUrl: process.env.PAYTM_FINAL_URL
+            });
+        },
+        error => {
+            res.send(error);
+        }
+        );
+    });
+    
+    app.post("/paywithpaytmresponse", (req, res) => {
+        responsePayment(req.body).then(
+            success => {
+                
+                res.json({resultData: "true", responseData: success});
+            },
+            error => {
+                res.send(error);
+            }
+            );
+});
+
 app.all("*", (req, res) => {
     res.status(404).json({
         message: `Can't find ${req.originalUrl} on this server!`,
