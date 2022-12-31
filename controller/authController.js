@@ -1,6 +1,6 @@
 const User = require("../model/userModel")
 const jwt = require("jsonwebtoken")
-const bcrypt=require('bcrypt');
+const bcrypt = require('bcrypt');
 const { promisify } = require("util")
 const sendEmail = require("../utils/sendEmail")
 
@@ -30,40 +30,41 @@ exports.register = async (req, res, next) => {
         })
     }
 
-    const blitzID = "Blitzschlag23" + req.body.name + numberOfUsers
+    let blitzID = "Blitzschlag23" + req.body.name + numberOfUsers
+    blitzID = blitzID.split(" ").join("")
     const url = `${process.env.BASE_URL}users/Blitzschlag23/BlitzId`
 
-    try{
-    await sendEmail(email, `<p><b>Malaviya National Institute of Technology Jaipur welcomes you for being a part of Blitzschlag 2023.</b></p><br></br><p>This is your 
-    blitzschlag 2023 ID - <b>${blitzID}</b></p>`, url)
+    try {
+        await sendEmail(email, `<p><b>Malaviya National Institute of Technology Jaipur welcomes you for being a part of Blitzschlag 2023.</b></p><br></br><p>This is your 
+    blitzschlag 2023 ID - <b>${blitzID}</b></p>`)
 
-    const newUser = await User.create({
-        name: req.body.name,
-        email: req.body.email,
-        password: req.body.password,
-        blitzId: blitzID
-    })
+        const newUser = await User.create({
+            name: req.body.name,
+            email: req.body.email,
+            password: req.body.password,
+            blitzId: blitzID
+        })
 
-    const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
-        expiresIn: process.env.JWT_EXPIRES_IN
-    })
+        const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
+            expiresIn: process.env.JWT_EXPIRES_IN
+        })
 
-    res.cookie('jwt', token)
-    return res.status(200).json({
-        status: "success",
-        token,
-        newUser
-    })
-}
-catch(err){
-    console.log(err);
-    res.sendStatus(500);
-}
+        res.cookie('jwt', token)
+        return res.status(200).json({
+            status: "success",
+            token,
+            newUser
+        })
+    }
+    catch (err) {
+        console.log(err);
+        res.sendStatus(500);
+    }
 }
 
 exports.login = async (req, res, next) => {
-    const email=req.body.email;
-    const pswd=req.body.password;
+    const email = req.body.email;
+    const pswd = req.body.password;
     if (!pswd || !email) {
         return res.json({
             status: "error",
@@ -77,13 +78,13 @@ exports.login = async (req, res, next) => {
             message: "Entered email is wrong !"
         })
     }
-    if (!(await bcrypt.compare(pswd, user.password))) {
+    if (pswd !== user.password) {
         return res.json({
             status: "error",
             message: "Entered password is wrong !"
         })
     }
-    const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
         expiresIn: process.env.JWT_EXPIRES_IN
     })
     res.cookie('jwt', token)
@@ -141,7 +142,7 @@ exports.protect = async (req, res, next) => {
             message: "You are not logged in. Please register if you are not registered yet, else directly login."
         })
     }
-    const decoded = await promisify(jwt.verify)(toke, process.env.JWT_SECRET)
+    const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET)
     const freshUser = await User.findById(decoded.id)
     if (!freshUser) {
         return res.status(401).json({
