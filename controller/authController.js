@@ -1,35 +1,39 @@
 const User = require("../model/userModel")
 const jwt = require("jsonwebtoken")
+const bcrypt=require('bcrypt');
 const { promisify } = require("util")
 const sendEmail = require("../utils/sendEmail")
 
 exports.register = async (req, res, next) => {
+    console.log(req.body);
     const email = req.body.email
     const password = req.body.password
     const name = req.body.name
-    const user = await User.find({ email })
-    const numberOfUsers = await User.find().count()
     if (!password || !name || !email) {
-        return res.status(400).json({
+        return res.json({
             status: "error",
             message: "Please fill all details!"
         })
     }
-    if (password.length < 8) {
-        return res.status(400).json({
-            status: "error",
-            message: "Password should contain more than 8 characters !"
-        })
-    }
+    const user = await User.find({ email })
+    const numberOfUsers = await User.find().count()
     if (user.length >= 1) {
-        return res.status(400).json({
+        return res.json({
             status: "error",
             message: "You are already registered !"
+        })
+    }
+    if (password.length < 8) {
+        return res.json({
+            status: "error",
+            message: "Password should contain more than 8 characters !"
         })
     }
 
     const blitzID = "Blitzschlag23" + req.body.name + numberOfUsers
     const url = `${process.env.BASE_URL}users/Blitzschlag23/BlitzId`
+
+    try{
     await sendEmail(email, `<p><b>Malaviya National Institute of Technology Jaipur welcomes you for being a part of Blitzschlag 2023.</b></p><br></br><p>This is your 
     blitzschlag 2023 ID - <b>${blitzID}</b></p>`, url)
 
@@ -51,19 +55,32 @@ exports.register = async (req, res, next) => {
         newUser
     })
 }
+catch(err){
+    console.log(err);
+    res.sendStatus(500);
+}
+}
 
 exports.login = async (req, res, next) => {
-    const user = await User.findOne({ email })
-    if (!user) {
-        return res.status(400).jsoon({
+    const email=req.body.email;
+    const pswd=req.body.password;
+    if (!pswd || !email) {
+        return res.json({
             status: "error",
-            error: "Entered email is wrong !"
+            message: "Please fill all details!"
         })
     }
-    if (!(await bcrypt.compare(candidatePassword, userPassword))) {
-        return res.status(400).json({
+    const user = await User.findOne({ email })
+    if (!user) {
+        return res.json({
             status: "error",
-            error: "Entered password is wrong !"
+            message: "Entered email is wrong !"
+        })
+    }
+    if (!(await bcrypt.compare(pswd, user.password))) {
+        return res.json({
+            status: "error",
+            message: "Entered password is wrong !"
         })
     }
     const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
