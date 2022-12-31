@@ -77,39 +77,41 @@ exports.login = async (req, res, next) => {
     })
 }
 
-exports.forgortPassword = async (req, res, next) => {
-    const passOriginal = req.body.password
-    const passConfirm = req.body.confirmPassword
+// exports.forgotPassword = async(req,res,next) => {}
 
-    if (passConfirm != passOriginal) {
-        return res.status(400).json({
-            status: "error",
-            error: "Please enter same original and confirm password !"
-        })
-    }
+// exports.resetPassword = async (req, res, next) => {
+//     const passOriginal = req.body.password
+//     const passConfirm = req.body.confirmPassword
 
-    const updatedUser = await User.updateOne({
-        email: req.body.email
-    },
-        {
-            $set: { password: req.body.passOriginal }
-        },
-        {
-            new: true,
-            runValidators: true,
-        })
-    if (updatedUser.length === 0) {
-        return res.status(400).json({
-            status: "error",
-            message: "You are not registered. Please register first !"
-        })
-    }
-    return res.status(200).json({
-        status: "success",
-        message: "Your password has been changed !",
-        updatedUser
-    })
-}
+//     if (passConfirm != passOriginal) {
+//         return res.status(400).json({
+//             status: "error",
+//             error: "Please enter same original and confirm password !"
+//         })
+//     }
+
+//     const updatedUser = await User.updateOne({
+//         email: req.body.email
+//     },
+//         {
+//             $set: { password: req.body.passOriginal }
+//         },
+//         {
+//             new: true,
+//             runValidators: true,
+//         })
+//     if (updatedUser.length === 0) {
+//         return res.status(400).json({
+//             status: "error",
+//             message: "You are not registered. Please register first !"
+//         })
+//     }
+//     return res.status(200).json({
+//         status: "success",
+//         message: "Your password has been changed !",
+//         updatedUser
+//     })
+// }
 
 exports.protect = async (req, res, next) => {
     let token

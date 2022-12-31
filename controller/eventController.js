@@ -13,12 +13,12 @@ exports.eventDetails = async (req, res, next) => {
 }
 
 exports.eventRegisteration = async (req, res, next) => {
-    const eventName = req.body.eventName
+    const event = await Events.find({ eventName: req.body.eventName })
     const updatedUser = await User.updateOne({
         _id: req.user._id
     },
         {
-            $push: { registeredEvents: eventName },
+            $push: { registeredEvents: event._id },
             $set: { pronites: true }
         },
         {
@@ -32,3 +32,5 @@ exports.eventRegisteration = async (req, res, next) => {
         updatedUser
     })
 }
+
+// exports.proniteRegistration
