@@ -9,6 +9,7 @@ const helmet = require("helmet")
 const cookieParser = require("cookie-parser")
 const PORT = process.env.PORT || 2080
 const userRouter = require("./routes/userRoutes")
+const authController = require("./controller/authController")
 app.use(bodyParser.urlencoded({ extended: true }));
 
 dotenv.config({
@@ -44,7 +45,7 @@ mongoose.connection.on("error", (error) => {
 
 app.use('/users', userRouter)
 
-const {initPayment, responsePayment} = require("./paytm/services/index");
+const { initPayment, responsePayment } = require("./paytm/services/index");
 
 app.get("/paywithpaytm", (req, res) => {
     console.log("payment requested");
@@ -59,19 +60,19 @@ app.get("/paywithpaytm", (req, res) => {
         error => {
             res.send(error);
         }
-        );
-    });
-    
-    app.post("/paywithpaytmresponse", (req, res) => {
-        responsePayment(req.body).then(
-            success => {
-                
-                res.json({resultData: "true", responseData: success});
-            },
-            error => {
-                res.send(error);
-            }
-            );
+    );
+});
+
+app.post("/paywithpaytmresponse", (req, res) => {
+    responsePayment(req.body).then(
+        success => {
+
+            res.json({ resultData: "true", responseData: success });
+        },
+        error => {
+            res.send(error);
+        }
+    );
 });
 
 app.all("*", (req, res) => {
