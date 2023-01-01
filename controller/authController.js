@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken")
 const bcrypt = require('bcrypt');
 const { promisify } = require("util")
 const sendEmail = require("../utils/sendEmail")
+const crypto = require("crypto")
 
 exports.register = async (req, res, next) => {
     console.log(req.body);
@@ -36,7 +37,7 @@ exports.register = async (req, res, next) => {
 
     try {
         await sendEmail(email, `<p><b>Malaviya National Institute of Technology Jaipur welcomes you for being a part of Blitzschlag 2023.</b></p><br></br><p>This is your 
-    blitzschlag 2023 ID - <b>${blitzID}</b></p>`)
+    blitzschlag 2023 ID - <b>${blitzID}</b></p>`, "Your Blitzschlag 2023 ID")
 
         const newUser = await User.create({
             name: req.body.name,
@@ -152,6 +153,38 @@ exports.protect = async (req, res, next) => {
     }
     req.user = freshUser
     next()
+}
+
+exports.forgotPassword = async (req, res, next) => {
+
+    let resetToken = crypto.randomBytes(32).toString('hex');
+    resetToken = crypto
+        .createHash('sha256')
+        .update(resetToken)
+        .digest('hex');
+
+    const user = await User.find({ email: req.body.email })
+    if (!user) {
+        return res.status(400).json({
+            status: "error",
+            message: "No such user has registered yet."
+        })
+    }
+    const resetURL = `${req.protocol}://${req.get(
+        'host'
+    )}/api/v1/users/resetPassword/${restToken}`;
+
+    try {
+        await sendEmail(email, `<p>Reset your password at this given link - ${resetURL}</p>`, "Reset you password")
+    }
+    catch (err) {
+        console.log(err);
+        res.sendStatus(500);
+    }
+}
+
+exports.resetPassword = async (req, res, next) => {
+
 }
 
 exports.logout = (req, res, next) => {

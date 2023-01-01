@@ -26,7 +26,9 @@ const userSchema = new mongoose.Schema({
     pronites: {
         type: Boolean,
         default: false
-    }
+    },
+    passwordResetToken: String,
+    passwordResetExpires: Date,
 })
 
 const User = mongoose.model('User', userSchema)

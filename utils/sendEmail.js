@@ -1,6 +1,6 @@
 const nodemailer = require("nodemailer")
 
-module.exports = async (email, html) => {
+module.exports = async (email, html, subject) => {
     try {
         var transporter = nodemailer.createTransport({
             host: process.env.HOST,
@@ -15,7 +15,7 @@ module.exports = async (email, html) => {
         await transporter.sendMail({
             from: process.env.USER,
             to: email,
-            subject: "Your Blitzschlag 2023 ID",
+            subject: subject,
             html: html
         })
         console.log("Email sent Successfully!")
