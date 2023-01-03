@@ -121,8 +121,8 @@ exports.protect = async (req, res, next) => {
 
 exports.forgotPassword = async (req, res, next) => {
     const user = await User.find({ email: req.body.email })
-    if (!user) {
-        return res.status(400).json({
+    if (user.length === 0) {
+        return res.status(200).json({
             status: "error",
             message: "No such user has registered yet."
         })
