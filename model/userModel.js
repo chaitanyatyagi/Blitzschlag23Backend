@@ -27,8 +27,8 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-    passwordResetToken: String,
-    passwordResetExpires: Date,
+    otp: Number,
+    otpExpires: Date,
 })
 
 const User = mongoose.model('User', userSchema)

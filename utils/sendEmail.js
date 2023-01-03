@@ -11,6 +11,7 @@ module.exports = async (email, html, subject) => {
                 user: process.env.USER,
                 pass: process.env.PASS
             }
+
         })
         await transporter.sendMail({
             from: process.env.USER,

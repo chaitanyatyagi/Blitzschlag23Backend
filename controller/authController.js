@@ -96,42 +96,6 @@ exports.login = async (req, res, next) => {
     })
 }
 
-// exports.forgotPassword = async(req,res,next) => {}
-
-// exports.resetPassword = async (req, res, next) => {
-//     const passOriginal = req.body.password
-//     const passConfirm = req.body.confirmPassword
-
-//     if (passConfirm != passOriginal) {
-//         return res.status(400).json({
-//             status: "error",
-//             error: "Please enter same original and confirm password !"
-//         })
-//     }
-
-//     const updatedUser = await User.updateOne({
-//         email: req.body.email
-//     },
-//         {
-//             $set: { password: req.body.passOriginal }
-//         },
-//         {
-//             new: true,
-//             runValidators: true,
-//         })
-//     if (updatedUser.length === 0) {
-//         return res.status(400).json({
-//             status: "error",
-//             message: "You are not registered. Please register first !"
-//         })
-//     }
-//     return res.status(200).json({
-//         status: "success",
-//         message: "Your password has been changed !",
-//         updatedUser
-//     })
-// }
-
 exports.protect = async (req, res, next) => {
     let token
     if (req.cookies.jwt) {
@@ -156,13 +120,6 @@ exports.protect = async (req, res, next) => {
 }
 
 exports.forgotPassword = async (req, res, next) => {
-
-    let resetToken = crypto.randomBytes(32).toString('hex');
-    resetToken = crypto
-        .createHash('sha256')
-        .update(resetToken)
-        .digest('hex');
-
     const user = await User.find({ email: req.body.email })
     if (!user) {
         return res.status(400).json({
@@ -170,21 +127,66 @@ exports.forgotPassword = async (req, res, next) => {
             message: "No such user has registered yet."
         })
     }
-    const resetURL = `${req.protocol}://${req.get(
-        'host'
-    )}/api/v1/users/resetPassword/${restToken}`;
-
+    const resetURL = "http://localhost:3000/resetpassword";
+    const otp = `${Math.floor(1000 + Math.random() * 9000)}`
+    const email = req.body.email
     try {
-        await sendEmail(email, `<p>Reset your password at this given link - ${resetURL}</p>`, "Reset you password")
+        await User.updateOne({ email: req.body.email },
+            {
+                $set: { otp: otp },
+                otpExpires: Date.now() + 60 * 10 * 1000
+            })
+
+        await sendEmail(email, `<p>OTP - ${otp}</p><p>Reset your password at this given link - ${resetURL}</p>`, "Reset you password")
+        return res.status(200).json({
+            status: 'success',
+            message: 'Token sent to email',
+        });
     }
     catch (err) {
-        console.log(err);
-        res.sendStatus(500);
+        return res.status(500).json({
+            status: "error",
+            message: err
+        })
     }
 }
 
 exports.resetPassword = async (req, res, next) => {
+    const passOriginal = req.body.newpassword
+    const passConfirm = req.body.confirmpassword
+    const otp = req.body.otp
 
+    const user = await User.findOne({
+        otp: otp,
+        otpExpires: { $gt: Date.now() }
+    })
+    if (passConfirm != passOriginal) {
+        return res.status(200).json({
+            status: "error",
+            message: "Password does not matches !"
+        })
+    }
+
+    if (!user) {
+        return res.status(200).json({
+            status: "error",
+            message: "Entered otp is either wrong or expired !"
+        })
+    }
+
+    const updatedUser = await User.updateOne({
+        otp: otp
+    },
+        {
+            $set: { password: passOriginal },
+            otp: undefined,
+            otpExpires: undefined
+        })
+
+    return res.status(200).json({
+        status: "success",
+        message: "Your password has been updated !",
+    })
 }
 
 exports.logout = (req, res, next) => {
