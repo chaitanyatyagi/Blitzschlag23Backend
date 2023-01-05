@@ -31,6 +31,29 @@ exports.register = async (req, res, next) => {
         })
     }
 
+    const indx = email.indexOf('@')
+    const string = email.substr(indx + 1, email.length)
+
+    if (string === 'mnit.ac.in') {
+        const resetURL = `${process.env.REACT_APP_SERVER}/resetpassword`;
+        const otp = `${Math.floor(1000 + Math.random() * 9000)}`
+        try {
+            await User.updateOne({ email: req.body.email },
+                {
+                    $set: { otp: otp },
+                    otpExpires: Date.now() + 60 * 10 * 1000
+                })
+
+            await sendEmail(email, `<p>OTP - ${otp}</p><p>VConfirm your MNIT Jaipur email -> ${resetURL}</p>`, "Reset you password")
+        }
+        catch (err) {
+            return res.status(500).json({
+                status: "error",
+                message: err
+            })
+        }
+    }
+
     let blitzID = "Blitzschlag23" + req.body.name + numberOfUsers
     blitzID = blitzID.split(" ").join("")
     const url = `${process.env.BASE_URL}users/Blitzschlag23/BlitzId`
@@ -63,6 +86,37 @@ exports.register = async (req, res, next) => {
     }
 }
 
+exports.emailVerification = async (req, res, next) => {
+    const otp = req.body.otp
+
+    const user = await User.findOne({
+        otp: otp,
+        otpExpires: { $gt: Date.now() }
+    })
+
+    if (!user) {
+        return res.status(200).json({
+            status: "error",
+            message: "Entered otp is either wrong or expired !"
+        })
+    }
+
+    const updatedUser = await User.updateOne({
+        otp: otp
+    },
+        {
+            $set: { password: passOriginal },
+            otp: undefined,
+            otpExpires: undefined
+        })
+
+    return res.status(200).json({
+        status: "success",
+        message: "Your email has been verified ! Please Login.",
+        updatedUser
+    })
+}
+
 exports.login = async (req, res, next) => {
     const email = req.body.email;
     const pswd = req.body.password;
@@ -88,7 +142,9 @@ exports.login = async (req, res, next) => {
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
         expiresIn: process.env.JWT_EXPIRES_IN
     })
+    // const userId = user._id
     res.cookie('jwt', token)
+    // res.cookie('userId', userId)
     return res.status(200).json({
         status: "success",
         token,
@@ -127,7 +183,7 @@ exports.forgotPassword = async (req, res, next) => {
             message: "No such user has registered yet."
         })
     }
-    const resetURL = "http://localhost:3000/resetpassword";
+    const resetURL = `${process.env.REACT_APP_SERVER}/resetpassword`;
     const otp = `${Math.floor(1000 + Math.random() * 9000)}`
     const email = req.body.email
     try {

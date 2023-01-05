@@ -9,6 +9,7 @@ const helmet = require("helmet")
 const cookieParser = require("cookie-parser")
 const PORT = process.env.PORT || 2080
 const userRouter = require("./routes/userRoutes")
+const pdfRouter = require("./routes/pdfRouter")
 const authController = require("./controller/authController")
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -44,6 +45,7 @@ mongoose.connection.on("error", (error) => {
 })
 
 app.use('/users', userRouter)
+app.use('/rulebook', userRouter)
 
 const { initPayment, responsePayment } = require("./paytm/services/index");
 
