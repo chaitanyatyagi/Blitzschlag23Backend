@@ -2,8 +2,8 @@ const User = require("../model/userModel")
 const jwt = require("jsonwebtoken")
 const bcrypt = require('bcrypt');
 const { promisify } = require("util")
-const sendEmail = require("../utils/sendEmail")
 const crypto = require("crypto")
+const {sendMail} =require("../controller/mailSender");
 
 
 exports.register = async (req, res, next) => {
@@ -45,7 +45,7 @@ exports.register = async (req, res, next) => {
                     otpExpires: Date.now() + 60 * 10 * 1000
                 })
 
-            await sendEmail(email, `<p>OTP - ${otp}</p><p>VConfirm your MNIT Jaipur email -> ${resetURL}</p>`, "Reset you password")
+            await sendMail(email, `<p>OTP - ${otp}</p><p>VConfirm your MNIT Jaipur email -> ${resetURL}</p>`, "Reset you password")
         }
         catch (err) {
             return res.status(500).json({
@@ -60,7 +60,7 @@ exports.register = async (req, res, next) => {
     const url = `${process.env.BASE_URL}users/Blitzschlag23/BlitzId`
 
     try {
-        await sendEmail(email, `<p><b>Malaviya National Institute of Technology Jaipur welcomes you for being a part of Blitzschlag 2023.</b></p><br></br><p>This is your 
+        await sendMail(email, `<p><b>Malaviya National Institute of Technology Jaipur welcomes you for being a part of Blitzschlag 2023.</b></p><br></br><p>This is your 
     blitzschlag 2023 ID - <b>${blitzID}</b></p>`, "Your Blitzschlag 2023 ID")
 
         const newUser = await User.create({
@@ -194,7 +194,7 @@ exports.forgotPassword = async (req, res, next) => {
                 otpExpires: Date.now() + 60 * 10 * 1000
             })
 
-        await sendEmail(email, `<p>OTP - ${otp}</p><p>Reset your password at this given link - ${resetURL}</p>`, "Reset you password")
+        await sendMail(email, `<p>OTP - ${otp}</p><p>Reset your password at this given link - ${resetURL}</p>`, "Reset you password")
         return res.status(200).json({
             status: 'success',
             message: 'Token sent to email',
