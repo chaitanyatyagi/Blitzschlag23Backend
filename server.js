@@ -45,7 +45,7 @@ mongoose.connection.on("error", (error) => {
 })
 
 app.use('/users', userRouter)
-app.use('/rulebook', userRouter)
+app.use('/rulebook', pdfRouter)
 
 const { initPayment, responsePayment } = require("./paytm/services/index");
 

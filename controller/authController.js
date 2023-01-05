@@ -5,6 +5,7 @@ const { promisify } = require("util")
 const sendEmail = require("../utils/sendEmail")
 const crypto = require("crypto")
 
+
 exports.register = async (req, res, next) => {
     console.log(req.body);
     const email = req.body.email
@@ -252,3 +253,8 @@ exports.logout = (req, res, next) => {
         message: "You are successfully logged out !"
     })
 }
+
+
+
+
+ 
