@@ -11,7 +11,7 @@ router.post('/registration', async (req, res) => {
         return res.json({ status: "error", message: "User not found in records" })
     }
     const events = await Registration.find({ userId: req.body.blitzId, eventName })
-    if (events.length > 1) {
+    if (events.length >= 1) {
         return res.json({
             status: "error",
             message: "You have already registered !"
