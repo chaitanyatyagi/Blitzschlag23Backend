@@ -23,7 +23,9 @@ router.post('/registration', async (req, res) => {
         await (new Registration({
             userId: req.body.userId, eventName: req.body.eventName, teamName: req.body.teamName, members: req.body.members, registrationTime: Date.now(), payment: {
                 transaction: req.body.utrId, paid: req.body.college
-            }
+            },
+            phone: req.body.phone,
+            teamLeader: req.body.teamLeader
         })).save()
         return res.json({ status: "success" });
     }
@@ -32,7 +34,5 @@ router.post('/registration', async (req, res) => {
         return res.json({ status: "error", message: "Error in registration . Please try again after some time" })
     }
 })
-
-
 
 module.exports = router

@@ -13,6 +13,11 @@ const registrationSchema = new mongoose.Schema({
         },
         transaction: String,
         timeStamp: Date,
+    },
+    phone: String,
+    teamLeader: {
+        type: Boolean,
+        default: false
     }
 })
 

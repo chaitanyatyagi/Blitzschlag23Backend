@@ -70,7 +70,6 @@ app.get("/paywithpaytm", (req, res) => {
 app.post("/paywithpaytmresponse", (req, res) => {
     responsePayment(req.body).then(
         success => {
-
             res.json({ resultData: "true", responseData: success });
         },
         error => {

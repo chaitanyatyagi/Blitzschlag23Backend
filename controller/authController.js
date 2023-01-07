@@ -187,10 +187,10 @@ exports.login = async (req, res, next) => {
 }
 
 exports.protect = async (req, res, next) => {
-    let token
-    if (req.cookies.jwt) {
-        token = req.cookies.jwt
-    }
+    let token=req.body.jwt;
+    // if (req.cookies.jwt) {
+    //     token = req.cookies.jwt
+    // }
     if (!token) {
         return res.status(400).json({
             status: "error",

@@ -7,8 +7,8 @@ router.route('/login').post(authController.login)
 router.route('/logout').get(authController.protect, authController.logout)
 router.route('/forgotpassword').post(authController.forgotPassword)
 router.route('/resetpassword').post(authController.resetPassword)
-router.route('/getuser').get(authController.protect, userController.getUser)
 router.route('/verifyOtp').post(authController.emailVerification)
+router.route('/getuser').post(authController.protect, userController.getUser)
 
 
 module.exports = router
