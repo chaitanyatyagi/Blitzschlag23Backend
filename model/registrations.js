@@ -6,7 +6,14 @@ const registrationSchema = new mongoose.Schema({
     teamName: String,
     members: Number,
     registrationTime: Date,
-    payment: { paid: { type: Boolean, default: false }, TransactionId: String, timeStamp: Date }
+    payment: {
+        paid: {
+            type: Boolean,
+            default: false,
+        },
+        transaction: String,
+        timeStamp: Date,
+    }
 })
 
 const Registration = mongoose.model('Registration', registrationSchema)

@@ -3,11 +3,10 @@ const jwt = require("jsonwebtoken")
 const bcrypt = require('bcrypt');
 const { promisify } = require("util")
 const crypto = require("crypto")
-const {sendMail} =require("../controller/mailSender");
+const { sendMail } = require("../controller/mailSender");
 
 
 exports.register = async (req, res, next) => {
-    console.log(req.body);
     const email = req.body.email
     const password = req.body.password
     const name = req.body.name
@@ -35,87 +34,121 @@ exports.register = async (req, res, next) => {
     const indx = email.indexOf('@')
     const string = email.substr(indx + 1, email.length)
 
-    if (string === 'mnit.ac.in') {
-        const resetURL = `${process.env.REACT_APP_SERVER}/resetpassword`;
+    if (string === 'mnit.ac.in' || string === 'iiitkota.ac.in') {
+        // const resetURL = `blitzschlag.co.in/verifyOTP`;
         const otp = `${Math.floor(1000 + Math.random() * 9000)}`
         try {
-            await User.updateOne({ email: req.body.email },
+            await User.create(
                 {
-                    $set: { otp: otp },
+                    otp,
                     otpExpires: Date.now() + 60 * 10 * 1000
                 })
-
-            await sendMail(email, `<p>OTP - ${otp}</p><p>VConfirm your MNIT Jaipur email -> ${resetURL}</p>`, "Reset you password")
+            // <p>Confirm your MNIT Jaipur email -> ${resetURL}</p>
+            await sendMail(email, `<p>OTP - ${otp}</p>`, "Verify your otp")
+            return res.status(200).json({
+                status: "success",
+                message: "Otp sent to this mail."
+            })
         }
         catch (err) {
+            console.log(err)
             return res.status(500).json({
                 status: "error",
                 message: err
             })
         }
     }
+    else {
+        let blitzID = "Blitz" + req.body.name.slice(0, 4) + numberOfUsers
+        blitzID = blitzID.split(" ").join("")
+        const url = `${process.env.BASE_URL}users/Blitzschlag23/BlitzId`
 
-    let blitzID = "Blitzschlag23" + req.body.name + numberOfUsers
-    blitzID = blitzID.split(" ").join("")
-    const url = `${process.env.BASE_URL}users/Blitzschlag23/BlitzId`
-
-    try {
-        await sendMail(email, `<p><b>Malaviya National Institute of Technology Jaipur welcomes you for being a part of Blitzschlag 2023.</b></p><br></br><p>This is your 
+        try {
+            await sendMail(email, `<p><b>Malaviya National Institute of Technology Jaipur welcomes you for being a part of Blitzschlag 2023.</b></p><br></br><p>This is your 
     blitzschlag 2023 ID - <b>${blitzID}</b></p>`, "Your Blitzschlag 2023 ID")
 
-        const newUser = await User.create({
-            name: req.body.name,
-            email: req.body.email,
-            password: req.body.password,
-            blitzId: blitzID
-        })
+            const newUser = await User.create({
+                name: req.body.name,
+                email: req.body.email,
+                password: req.body.password,
+                blitzId: blitzID
+            })
 
-        const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
+            const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
+                expiresIn: process.env.JWT_EXPIRES_IN
+            })
+
+            res.cookie('jwt', token)
+            return res.status(200).json({
+                status: "success",
+                token,
+                newUser
+            })
+        }
+        catch (err) {
+            console.log(err);
+            res.sendStatus(500);
+        }
+    }
+}
+
+exports.emailVerification = async (req, res, next) => {
+    const otp = req.body.otp
+    const email = req.body.email
+    const name = req.body.name
+    const password = req.body.password
+
+    const user = await User.findOne({
+        otp,
+        otpExpires: { $gt: Date.now() }
+    })
+
+    if (!user) {
+        await User.deleteOne({
+            otp,
+        })
+        return res.status(200).json({
+            status: "error",
+            message: "Entered otp is either wrong or expired !"
+        })
+    }
+    try {
+        const numberOfUsers = await User.find().count()
+        let blitzID = "Blitz" + name.slice(0, 4) + numberOfUsers
+        blitzID = blitzID.split(" ").join("")
+        await sendMail(email, `<p><b>Malaviya National Institute of Technology Jaipur welcomes you for being a part of Blitzschlag 2023.</b></p><br></br><p>This is your 
+blitzschlag 2023 ID - <b>${blitzID}</b></p>`, "Your Blitzschlag 2023 ID")
+
+        const updatedUser = await User.updateOne({
+            otp
+        },
+            {
+                email,
+                name,
+                password,
+                blitzId: blitzID,
+                otp: "",
+                otpExpires: undefined,
+                $set: { college: true }
+            })
+
+        const token = jwt.sign({ id: updatedUser._id }, process.env.JWT_SECRET, {
             expiresIn: process.env.JWT_EXPIRES_IN
         })
 
         res.cookie('jwt', token)
         return res.status(200).json({
             status: "success",
+            message: "Your email has been verified ! Please Login.",
             token,
-            newUser
+            updatedUser
         })
+
     }
     catch (err) {
         console.log(err);
         res.sendStatus(500);
     }
-}
-
-exports.emailVerification = async (req, res, next) => {
-    const otp = req.body.otp
-
-    const user = await User.findOne({
-        otp: otp,
-        otpExpires: { $gt: Date.now() }
-    })
-
-    if (!user) {
-        return res.status(200).json({
-            status: "error",
-            message: "Entered otp is either wrong or expired !"
-        })
-    }
-
-    const updatedUser = await User.updateOne({
-        otp: otp
-    },
-        {
-            $set: { password: passOriginal },
-            otp: undefined,
-            otpExpires: undefined
-        })
-
-    return res.status(200).json({
-        status: "success",
-        message: "Your email has been verified ! Please Login.",
-        updatedUser
-    })
 }
 
 exports.login = async (req, res, next) => {
@@ -184,7 +217,7 @@ exports.forgotPassword = async (req, res, next) => {
             message: "No such user has registered yet."
         })
     }
-    const resetURL = `${process.env.REACT_APP_SERVER}/resetpassword`;
+    const resetURL = `blitzschlag.co.in/resetpassword`;
     const otp = `${Math.floor(1000 + Math.random() * 9000)}`
     const email = req.body.email
     try {
@@ -236,7 +269,7 @@ exports.resetPassword = async (req, res, next) => {
     },
         {
             $set: { password: passOriginal },
-            otp: undefined,
+            otp: "",
             otpExpires: undefined
         })
 
@@ -257,4 +290,4 @@ exports.logout = (req, res, next) => {
 
 
 
- 
+
