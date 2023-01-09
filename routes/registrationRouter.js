@@ -6,12 +6,16 @@ const User = require("../model/userModel")
 router.post('/registration', async (req, res) => {
     const users = await User.find({ _id: req.body.userId });
     const eventName = req.body.eventName
+    const package = req.body.packageName
 
     if (users.length != 1) {
         return res.json({ status: "error", message: "User not found in records" })
     }
-    console.log(req.body.userId)
-    const events = await Registration.find({ userId: req.body.userId, eventName })
+    // Already registered left !
+    const events = await Registration.find({
+        userId: req.body.userId, "eventName.name": eventName, "eventName.register": true
+    })
+    console.log(events)
     if (events.length >= 1) {
         return res.json({
             status: "error",
@@ -20,19 +24,66 @@ router.post('/registration', async (req, res) => {
     }
 
     try {
-        await (new Registration({
-            userId: req.body.userId, eventName: req.body.eventName, teamName: req.body.teamName, members: req.body.members, registrationTime: Date.now(), payment: {
-                transaction: req.body.utrId, paid: req.body.college
-            },
-            phone: req.body.phone,
-            teamLeader: req.body.teamLeader
-        })).save()
+        if (package === "Envision") {
+            await (new Registration({
+                userId: req.body.userId, teamName: req.body.teamName, members: req.body.members,
+                eventName: {
+                    name: req.body.eventName,
+                    register: req.body.register,
+                    transaction: req.body.utrId,
+                    college: req.body.college
+                },
+                phone: req.body.phone,
+                teamLeader: req.body.teamLeader,
+                Envision: {
+                    transaction: req.body.utrId,
+                    day: req.body.day,
+                }
+
+            })).save()
+        }
+        else if (package === "Optica") {
+            await (new Registration({
+                userId: req.body.userId, teamName: req.body.teamName, members: req.body.members,
+                eventName: {
+                    name: req.body.eventName,
+                    register: req.body.register,
+                    transaction: req.body.utrId,
+                    college: req.body.college
+                },
+                phone: req.body.phone,
+                teamLeader: req.body.teamLeader,
+                Optica: {
+                    transaction: req.body.utrId,
+                    day: req.body.day,
+                }
+
+            })).save()
+        }
+        else {
+            await (new Registration({
+                userId: req.body.userId, teamName: req.body.teamName, members: req.body.members,
+                eventName: {
+                    name: req.body.eventName,
+                    register: req.body.register,
+                    transaction: req.body.utrId,
+                    college: req.body.college
+                },
+                phone: req.body.phone,
+                teamLeader: req.body.teamLeader,
+                Mirage: {
+                    transaction: req.body.utrId,
+                }
+
+            })).save()
+        }
+
         return res.json({ status: "success" });
     }
     catch (err) {
-        console.log(err);
         return res.json({ status: "error", message: "Error in registration . Please try again after some time" })
     }
 })
+
 
 module.exports = router
