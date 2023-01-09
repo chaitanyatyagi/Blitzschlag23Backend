@@ -114,7 +114,7 @@ exports.emailVerification = async (req, res, next) => {
     }
     try {
         const numberOfUsers = await User.find().count()
-        let blitzID = "Blitz" + name.slice(0, 4) + numberOfUsers
+        let blitzID = "Blitz" + "-" + name.slice(0, 3) + "-" + numberOfUsers
         blitzID = blitzID.split(" ").join("")
         await sendMail(email, `<p><b>Malaviya National Institute of Technology Jaipur welcomes you for being a part of Blitzschlag 2023.</b></p><br></br><p>This is your 
 blitzschlag 2023 ID - <b>${blitzID}</b></p>`, "Your Blitzschlag 2023 ID")
@@ -187,7 +187,7 @@ exports.login = async (req, res, next) => {
 }
 
 exports.protect = async (req, res, next) => {
-    let token=req.body.jwt;
+    let token = req.body.jwt;
     // if (req.cookies.jwt) {
     //     token = req.cookies.jwt
     // }
