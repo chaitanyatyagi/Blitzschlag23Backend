@@ -22,11 +22,11 @@ router.post('/registration', async (req, res) => {
             message: "You have already registered !"
         })
     }
-
+    console.log(req.body.InstituteId,)
     try {
         if (package === "Envision") {
             await (new Registration({
-                userId: req.body.userId, teamName: req.body.teamName, members: req.body.members,
+                userId: req.body.userId, teamName: req.body.teamName, members: req.body.members, InstituteId: req.body.InstituteId,
                 eventName: {
                     name: req.body.eventName,
                     register: req.body.register,
@@ -44,7 +44,7 @@ router.post('/registration', async (req, res) => {
         }
         else if (package === "Optica") {
             await (new Registration({
-                userId: req.body.userId, teamName: req.body.teamName, members: req.body.members,
+                userId: req.body.userId, teamName: req.body.teamName, members: req.body.members, InstituteId: req.body.InstituteId,
                 eventName: {
                     name: req.body.eventName,
                     register: req.body.register,
@@ -62,7 +62,7 @@ router.post('/registration', async (req, res) => {
         }
         else {
             await (new Registration({
-                userId: req.body.userId, teamName: req.body.teamName, members: req.body.members,
+                userId: req.body.userId, teamName: req.body.teamName, members: req.body.members, InstituteId: req.body.InstituteId,
                 eventName: {
                     name: req.body.eventName,
                     register: req.body.register,

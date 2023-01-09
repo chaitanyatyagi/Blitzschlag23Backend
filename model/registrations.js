@@ -5,6 +5,7 @@ const registrationSchema = new mongoose.Schema({
     teamName: String,
     members: Number,
     phone: String,
+    InstituteId: String,
     teamLeader: {
         type: Boolean,
         default: false
