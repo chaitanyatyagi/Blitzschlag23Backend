@@ -10,7 +10,10 @@ exports.register = async (req, res, next) => {
     const email = req.body.email
     const password = req.body.password
     const name = req.body.name
-    if (!password || !name || !email) {
+    const phone = req.body.phone
+    const instituteId = req.body.instituteId
+
+    if (!password || !name || !email || !instituteId || !phone) {
         return res.json({
             status: "error",
             message: "Please fill all details!"
@@ -30,21 +33,30 @@ exports.register = async (req, res, next) => {
             message: "Password should contain more than 8 characters !"
         })
     }
+    if (phone.length != 10) {
+        return res.json({
+            status: "error",
+            message: "Number should consists of 10 digits!"
+        })
+    }
 
     const indx = email.indexOf('@')
     const string = email.substr(indx + 1, email.length)
 
     if (string === 'mnit.ac.in' || string === 'iiitkota.ac.in') {
-        // const resetURL = `blitzschlag.co.in/verifyOTP`;
         const otp = `${Math.floor(1000 + Math.random() * 9000)}`
         try {
             await User.create(
                 {
+                    name: req.body.name,
+                    password: req.body.password,
+                    phone: req.body.phone,
+                    instituteId: req.body.instituteId,
                     otp,
                     otpExpires: Date.now() + 60 * 10 * 1000
                 })
             // <p>Confirm your MNIT Jaipur email -> ${resetURL}</p>
-            await sendMail(email, `<p>OTP - ${otp}</p>`, "Verify your otp")
+            await sendMail(email, `<p>Hello,</p><p>${otp} is your OTP for e-mail verification for BLITZSCHLAG MNIT JAIPUR’s College Connect Program registration. Please do not share the OTP with anyone. </p> <br></br> <p>This is a system-generated e-mail so please do not reply.</p> <br></br> <p>Regards,</p><p>Blitzschlag 2023</p>`, "Verify your otp")
             return res.status(200).json({
                 status: "success",
                 message: "Otp sent to this mail."
@@ -71,7 +83,9 @@ exports.register = async (req, res, next) => {
                 name: req.body.name,
                 email: req.body.email,
                 password: req.body.password,
-                blitzId: blitzID
+                blitzId: blitzID,
+                phone: req.body.phone,
+                instituteId: req.body.instituteId
             })
 
             const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
@@ -96,7 +110,6 @@ exports.emailVerification = async (req, res, next) => {
     const otp = req.body.otp
     const email = req.body.email
     const name = req.body.name
-    const password = req.body.password
 
     const user = await User.findOne({
         otp,
@@ -123,11 +136,10 @@ blitzschlag 2023 ID - <b>${blitzID}</b></p>`, "Your Blitzschlag 2023 ID")
             otp
         },
             {
-                email,
                 name,
-                password,
-                blitzId: blitzID,
+                email: req.body.email,
                 otp: "",
+                blitzId: blitzID,
                 otpExpires: undefined,
                 $set: { college: true }
             })
@@ -227,7 +239,8 @@ exports.forgotPassword = async (req, res, next) => {
                 otpExpires: Date.now() + 60 * 10 * 1000
             })
 
-        await sendMail(email, `<p>OTP - ${otp}</p><p>Reset your password at this given link - ${resetURL}</p>`, "Reset you password")
+        await sendMail(email, `<p>Hello,</p><p>${otp} is your OTP to Reset Password for BLITZSCHLAG MNIT JAIPUR’s College Cultural Program. Please do not share the OTP with anyone. </p> <br></br><p>Reset your password at this given link - ${resetURL}</p><br></br> <p>This is a system-generated e-mail so please do not reply.</p> <br></br> <p>Regards,</p><p>Blitzschlag 2023</p>`, "Reset you password")
+
         return res.status(200).json({
             status: 'success',
             message: 'Token sent to email',

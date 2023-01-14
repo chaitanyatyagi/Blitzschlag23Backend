@@ -18,6 +18,8 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    instituteId: String,
+    phone: String,
     otp: Number,
     otpExpires: Date,
 })
