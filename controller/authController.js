@@ -112,17 +112,19 @@ exports.emailVerification = async (req, res, next) => {
     const name = req.body.name
 
     const user = await User.findOne({
+        name,
         otp,
         otpExpires: { $gt: Date.now() }
     })
 
     if (!user) {
         await User.deleteOne({
-            otp,
+            name,
+            // otp,
         })
         return res.status(200).json({
             status: "error",
-            message: "Entered otp is either wrong or expired !"
+            message: "Entered otp is either wrong or expired or email is wrong!"
         })
     }
     try {

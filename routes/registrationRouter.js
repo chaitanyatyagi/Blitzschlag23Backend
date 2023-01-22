@@ -2,7 +2,7 @@ const express = require("express")
 const router = express.Router()
 const Registration = require('../model/registrations');
 const User = require("../model/userModel")
-const eventController=require("../controller/eventController")
+const eventController = require("../controller/eventController")
 
 router.route("/getList").get(eventController.fetchList);
 
@@ -41,6 +41,7 @@ router.post('/registration', async (req, res) => {
                 Envision: {
                     transaction: req.body.utrId,
                     day: req.body.day,
+                    register: true
                 }
 
             })).save()
@@ -59,6 +60,25 @@ router.post('/registration', async (req, res) => {
                 Optica: {
                     transaction: req.body.utrId,
                     day: req.body.day,
+                    register: true
+                }
+
+            })).save()
+        }
+        else if (package === "Mirage") {
+            await (new Registration({
+                userId: req.body.userId, teamName: req.body.teamName, members: req.body.members, InstituteId: req.body.InstituteId,
+                eventName: {
+                    name: req.body.eventName,
+                    register: req.body.register,
+                    transaction: req.body.utrId,
+                    college: req.body.college
+                },
+                phone: req.body.phone,
+                teamLeader: req.body.teamLeader,
+                Mirage: {
+                    transaction: req.body.utrId,
+                    register: true
                 }
 
             })).save()
@@ -74,10 +94,6 @@ router.post('/registration', async (req, res) => {
                 },
                 phone: req.body.phone,
                 teamLeader: req.body.teamLeader,
-                Mirage: {
-                    transaction: req.body.utrId,
-                }
-
             })).save()
         }
 

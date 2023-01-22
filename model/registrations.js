@@ -27,6 +27,10 @@ const registrationSchema = new mongoose.Schema({
         }
     },
     Envision: {
+        register: {
+            type: Boolean,
+            default: false,
+        },
         day: String,
         transaction: String,
         verifiedPayment: {
@@ -35,6 +39,10 @@ const registrationSchema = new mongoose.Schema({
         }
     },
     Optica: {
+        register: {
+            type: Boolean,
+            default: false,
+        },
         day: String,
         transaction: String,
         verifiedPayment: {
@@ -43,6 +51,10 @@ const registrationSchema = new mongoose.Schema({
         }
     },
     Mirage: {
+        register: {
+            type: Boolean,
+            default: false,
+        },
         transaction: String,
         verifiedPayment: {
             type: Boolean,
