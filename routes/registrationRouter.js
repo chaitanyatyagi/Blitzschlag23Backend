@@ -2,6 +2,9 @@ const express = require("express")
 const router = express.Router()
 const Registration = require('../model/registrations');
 const User = require("../model/userModel")
+const eventController=require("../controller/eventController")
+
+router.route("/getList").get(eventController.fetchList);
 
 router.post('/registration', async (req, res) => {
     const users = await User.find({ _id: req.body.userId });
