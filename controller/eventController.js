@@ -1,18 +1,21 @@
 const xlsx = require("xlsx");
 const path = require("path");
 const User = require("../model/userModel")
-const Registration = require('../model/registrations')
+const Registration = require('../model/registrations');
+const { rejects } = require("assert");
 const worksheetColumns = [
     "Name",
     "Email",
     "InstituteID",
     "BlitzId",
     "Mobile",
+    "teamName",
+    'members'
 ]
 
 const exportToExcel = async (raw_data, worksheetColumns, worksheetname, filePath, res) => {
     const data = raw_data.map((user) => {
-        return [user.name, user.email, user.instituteId, user.blitzId, user.phone];
+        return [user.name, user.email, user.instituteId, user.blitzId, user.phone,user.teamName,user.members];
     })
     const workbook = xlsx.utils.book_new();
     const worksheetdata = [
@@ -32,19 +35,27 @@ exports.fetchList = async (req, res, next) => {
         return res.sendStatus(400);
     }
     try {
-        const data = await Registration.find({ "eventName.name": ename }, { userId: 1, _id: 0 ,phone:1})
-        // console.log(data);
+        const data = await Registration.find({ "eventName.name": ename }, { userId: 1, _id: 0 ,phone:1,teamName:1,members:1})
+        console.log(data);
         const array = await Promise.all(
             data.map(async (id, index) => {
-                const entry = await User.findOne({ _id: id.userId }, { name: 1, email: 1, blitzId: 1, instituteId: 1, phone: 1, _id: 0 });
-                entry["phone"]=id.phone;
-                return entry;
+                console.log("hey",id.userId);
+                const entry = await User.findById( id.userId , { name: 1, email: 1, blitzId: 1, instituteId: 1, phone: 1, _id: 0 });
+                console.log("entry",entry);
+                if(entry){
+                    entry['phone']=id.phone;
+                    entry['teamName']=id.teamName;
+                    entry['members']=id.members;
+                    return  entry;
+                }
+                else return {'phone':id.phone,'members':id.members,'teamName':id.teamName}
             })
         );
         if(ename.length>15){
             ename=ename.slice(0,15);
         }
         // console.log(ename);
+        console.log(array);
         await exportToExcel(array, worksheetColumns, `Registrations--${ename}`, `excels/${ename}.xlsx`, res);
 
     }
