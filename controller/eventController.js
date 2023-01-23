@@ -32,14 +32,19 @@ exports.fetchList = async (req, res, next) => {
         return res.sendStatus(400);
     }
     try {
-        const data = await Registration.find({ "eventName.name": ename }, { userId: 1, _id: 0 })
+        const data = await Registration.find({ "eventName.name": ename }, { userId: 1, _id: 0 ,phone:1})
         // console.log(data);
         const array = await Promise.all(
             data.map(async (id, index) => {
                 const entry = await User.findOne({ _id: id.userId }, { name: 1, email: 1, blitzId: 1, instituteId: 1, phone: 1, _id: 0 });
+                entry["phone"]=id.phone;
                 return entry;
             })
         );
+        if(ename.length>15){
+            ename=ename.slice(0,15);
+        }
+        // console.log(ename);
         await exportToExcel(array, worksheetColumns, `Registrations--${ename}`, `excels/${ename}.xlsx`, res);
 
     }
