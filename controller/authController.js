@@ -117,12 +117,9 @@ exports.emailVerification = async (req, res, next) => {
     })
 
     if (!user) {
-        await User.deleteMany({
-            phone,
-        })
         return res.status(200).json({
             status: "error",
-            message: "Entered otp is either wrong or expired or email is wrong!"
+            message: "Entered otp is either wrong or expired or phone number is wrong!"
         })
     }
     try {
@@ -136,7 +133,6 @@ blitzschlag 2023 ID - <b>${blitzID}</b></p>`, "Your Blitzschlag 2023 ID")
             otp
         },
             {
-                name,
                 email: req.body.email,
                 otp: "",
                 blitzId: blitzID,
