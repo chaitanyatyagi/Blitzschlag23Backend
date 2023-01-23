@@ -40,6 +40,7 @@ exports.fetchList = async (req, res, next) => {
                 return entry;
             })
         );
+
         await exportToExcel(array, worksheetColumns, `Registrations--${ename}`, `excels/${ename}.xlsx`, res);
 
     }
