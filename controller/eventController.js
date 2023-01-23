@@ -51,8 +51,8 @@ exports.fetchList = async (req, res, next) => {
                 else return {'phone':id.phone,'members':id.members,'teamName':id.teamName}
             })
         );
-        if(ename.length>15){
-            ename=ename.slice(0,15);
+        if (ename.length > 15) {
+            ename = ename.slice(0, 15);
         }
         // console.log(ename);
         console.log(array);

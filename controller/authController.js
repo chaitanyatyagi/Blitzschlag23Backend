@@ -109,18 +109,16 @@ exports.register = async (req, res, next) => {
 exports.emailVerification = async (req, res, next) => {
     const otp = req.body.otp
     const email = req.body.email
-    const name = req.body.name
+    const phone = req.body.phone
 
     const user = await User.findOne({
-        name,
         otp,
         otpExpires: { $gt: Date.now() }
     })
 
     if (!user) {
-        await User.deleteOne({
-            name,
-            // otp,
+        await User.deleteMany({
+            phone,
         })
         return res.status(200).json({
             status: "error",
