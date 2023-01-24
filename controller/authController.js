@@ -109,7 +109,7 @@ exports.register = async (req, res, next) => {
 exports.emailVerification = async (req, res, next) => {
     const otp = req.body.otp
     const email = req.body.email
-    const phone = req.body.phone
+    const name = req.body.name
 
     const user = await User.findOne({
         otp,
