@@ -12,6 +12,7 @@ const userRouter = require("./routes/userRoutes")
 const pdfRouter = require("./routes/pdfRouter")
 const registerationRouter = require("./routes/registrationRouter")
 const authController = require("./controller/authController")
+const eventRouter = require("./routes/eventRoutes")
 app.use(bodyParser.urlencoded({ extended: true }));
 
 dotenv.config({
@@ -48,6 +49,7 @@ mongoose.connection.on("error", (error) => {
 app.use('/users', userRouter)
 app.use('/rulebook', pdfRouter)
 app.use('/events', registerationRouter)
+app.use('/excel', eventRouter)
 
 const { initPayment, responsePayment } = require("./paytm/services/index");
 

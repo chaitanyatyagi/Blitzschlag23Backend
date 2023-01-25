@@ -15,7 +15,7 @@ const worksheetColumns = [
 
 const exportToExcel = async (raw_data, worksheetColumns, worksheetname, filePath, res) => {
     const data = raw_data.map((user) => {
-        return [user.name, user.email, user.instituteId, user.blitzId, user.phone,user.teamName,user.members];
+        return [user.name, user.email, user.instituteId, user.blitzId, user.phone, user.teamName, user.members];
     })
     const workbook = xlsx.utils.book_new();
     const worksheetdata = [
@@ -35,20 +35,20 @@ exports.fetchList = async (req, res, next) => {
         return res.sendStatus(400);
     }
     try {
-        const data = await Registration.find({ "eventName.name": ename }, { userId: 1, _id: 0 ,phone:1,teamName:1,members:1})
+        const data = await Registration.find({ "eventName.name": ename }, { userId: 1, _id: 0, phone: 1, teamName: 1, members: 1 })
         console.log(data);
         const array = await Promise.all(
             data.map(async (id, index) => {
-                console.log("hey",id.userId);
-                const entry = await User.findById( id.userId , { name: 1, email: 1, blitzId: 1, instituteId: 1, phone: 1, _id: 0 });
-                console.log("entry",entry);
-                if(entry){
-                    entry['phone']=id.phone;
-                    entry['teamName']=id.teamName;
-                    entry['members']=id.members;
-                    return  entry;
+                console.log("hey", id.userId);
+                const entry = await User.findById(id.userId, { name: 1, email: 1, blitzId: 1, instituteId: 1, phone: 1, _id: 0 });
+                console.log("entry", entry);
+                if (entry) {
+                    entry['phone'] = id.phone;
+                    entry['teamName'] = id.teamName;
+                    entry['members'] = id.members;
+                    return entry;
                 }
-                else return {'phone':id.phone,'members':id.members,'teamName':id.teamName}
+                else return { 'phone': id.phone, 'members': id.members, 'teamName': id.teamName }
             })
         );
         if (ename.length > 15) {
@@ -63,4 +63,41 @@ exports.fetchList = async (req, res, next) => {
         console.log(err);
         return res.sendStatus(500);
     }
+}
+
+const worksheetColumn = [
+    "Name",
+    "Email",
+    "Mobile",
+]
+
+const exportToExcelUser = async (raw_data, worksheetColumns, worksheetname, filePath, res) => {
+    const data = raw_data.map((user) => {
+        if (user) {
+            return [user.name, user.email, user.phone];
+        }
+    })
+    const workbook = xlsx.utils.book_new();
+    const worksheetdata = [
+        worksheetColumns,
+        ...data
+    ]
+    const worksheet = xlsx.utils.aoa_to_sheet(worksheetdata);
+    xlsx.utils.book_append_sheet(workbook, worksheet, worksheetname);
+    await xlsx.writeFileAsync(path.resolve(filePath), workbook, {}, () => { res.download(path.resolve(filePath)) });
+}
+
+
+exports.userList = async (req, res, next) => {
+    const users = await User.find()
+    const array = await Promise.all(
+        users.map((user, indx) => {
+            const email = user.email
+            if (email) {
+                return { 'name': user.name, 'email': user.email, 'phone': user.phone }
+            }
+        })
+    )
+    // console.log(array)
+    await exportToExcelUser(array, worksheetColumn, `Registered Users`, `excels/users.xlsx`, res);
 }
