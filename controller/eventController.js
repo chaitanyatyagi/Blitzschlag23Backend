@@ -39,7 +39,7 @@ exports.fetchList = async (req, res, next) => {
         console.log(data);
         const array = await Promise.all(
             data.map(async (id, index) => {
-                console.log("hey", id.userId);
+                // console.log("hey", id.userId);
                 const entry = await User.findById(id.userId, { name: 1, email: 1, blitzId: 1, instituteId: 1, phone: 1, _id: 0 });
                 console.log("entry", entry);
                 if (entry) {
@@ -100,4 +100,31 @@ exports.userList = async (req, res, next) => {
     )
     // console.log(array)
     await exportToExcelUser(array, worksheetColumn, `Registered Users`, `excels/users.xlsx`, res);
+}
+
+const collegeWorksheetColumn = [
+    "Name",
+    "Mobile",
+    "Institute-Id",
+    "Email",
+    "Blitz-Id"
+]
+
+exports.collegeList = async (req, res, next) => {
+    const data = await Registration.find({ "eventName.college": false }, {
+        userId: 1, _id: 0, phone: 1, teamName: 1, members: 1
+    })
+    const array = await Promise.all(
+        data.map(async (user, indx) => {
+            const entry = await User.findById(user.userId, { name: 1, email: 1, blitzId: 1, instituteId: 1, phone: 1, _id: 0 })
+            if (entry) {
+                entry['phone'] = user.phone;
+                entry['teamName'] = user.teamName;
+                entry['members'] = user.members;
+                return entry;
+            }
+            else return { 'phone': user.phone, 'members': user.members, 'teamName': user.teamName }
+        })
+    )
+    await exportToExcel(array, collegeWorksheetColumn, `Other College Registrations`, `excels/college-false.xlsx`, res);
 }
