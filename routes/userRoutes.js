@@ -9,6 +9,7 @@ router.route('/forgotpassword').post(authController.forgotPassword)
 router.route('/resetpassword').post(authController.resetPassword)
 router.route('/verifyOtp').post(authController.emailVerification)
 router.route('/getuser').post(authController.protect, userController.getUser)
+router.route('/otp-handling').get(authController.OtpHandling)
 
 
 module.exports = router

@@ -297,6 +297,14 @@ exports.logout = (req, res, next) => {
 }
 
 
+exports.OtpHandling = async (req, res, next) => {
+    const otp = await User.updateMany({ otp: { $ne: null } },
+        {
+            otp: null
+        })
+    next()
 
+
+}
 
 
