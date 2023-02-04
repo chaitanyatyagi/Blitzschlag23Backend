@@ -10,7 +10,8 @@ const worksheetColumns = [
     "BlitzId",
     "Mobile",
     "teamName",
-    'members'
+    'members',
+    'payment'
 ]
 
 const exportToExcel = async (raw_data, worksheetColumns, worksheetname, filePath, res) => {
@@ -35,7 +36,7 @@ exports.fetchList = async (req, res, next) => {
         return res.sendStatus(400);
     }
     try {
-        const data = await Registration.find({ "eventName.name": ename }, { userId: 1, _id: 0, phone: 1, teamName: 1, members: 1 })
+        const data = await Registration.find({ "eventName.name": ename })
         console.log(data);
         const array = await Promise.all(
             data.map(async (id, index) => {
@@ -46,9 +47,10 @@ exports.fetchList = async (req, res, next) => {
                     entry['phone'] = id.phone;
                     entry['teamName'] = id.teamName;
                     entry['members'] = id.members;
+                    entry['payment']=id.eventName.verifiedPayment
                     return entry;
                 }
-                else return { 'phone': id.phone, 'members': id.members, 'teamName': id.teamName }
+                else return { 'phone': id.phone, 'members': id.members, 'teamName': id.teamName ,'payment':id.eventName.verifiedPayment}
             })
         );
         if (ename.length > 15) {
