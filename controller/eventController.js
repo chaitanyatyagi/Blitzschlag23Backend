@@ -16,7 +16,7 @@ const worksheetColumns = [
 
 const exportToExcel = async (raw_data, worksheetColumns, worksheetname, filePath, res) => {
     const data = raw_data.map((user) => {
-        return [user.name, user.email, user.instituteId, user.blitzId, user.phone, user.teamName, user.members];
+        return [user.name, user.email, user.instituteId, user.blitzId, user.phone, user.teamName, user.members,user.payment];
     })
     const workbook = xlsx.utils.book_new();
     const worksheetdata = [
@@ -47,7 +47,7 @@ exports.fetchList = async (req, res, next) => {
                     entry['phone'] = id.phone;
                     entry['teamName'] = id.teamName;
                     entry['members'] = id.members;
-                    entry['payment']=id.eventName.verifiedPayment
+                    entry['payment']=id.eventName.verifiedPayment;
                     return entry;
                 }
                 else return { 'phone': id.phone, 'members': id.members, 'teamName': id.teamName ,'payment':id.eventName.verifiedPayment}
