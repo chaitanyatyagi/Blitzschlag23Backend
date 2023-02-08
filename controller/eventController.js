@@ -12,8 +12,7 @@ const worksheetColumns = [
     "teamName",
     'members',
     'payment'
-]
-
+] 
 const exportToExcel = async (raw_data, worksheetColumns, worksheetname, filePath, res) => {
     const data = raw_data.map((user) => {
         return [user.name, user.email, user.instituteId, user.blitzId, user.phone, user.teamName, user.members,user.payment];
@@ -23,6 +22,7 @@ const exportToExcel = async (raw_data, worksheetColumns, worksheetname, filePath
         worksheetColumns,
         ...data
     ]
+    
     const worksheet = xlsx.utils.aoa_to_sheet(worksheetdata);
     xlsx.utils.book_append_sheet(workbook, worksheet, worksheetname);
     await xlsx.writeFileAsync(path.resolve(filePath), workbook, {}, () => { res.download(path.resolve(filePath)) });
@@ -42,12 +42,13 @@ exports.fetchList = async (req, res, next) => {
             data.map(async (id, index) => {
                 // console.log("hey", id.userId);
                 const entry = await User.findById(id.userId, { name: 1, email: 1, blitzId: 1, instituteId: 1, phone: 1, _id: 0 });
-                console.log("entry", entry);
+                // console.log("entry", entry);
                 if (entry) {
                     entry['phone'] = id.phone;
                     entry['teamName'] = id.teamName;
                     entry['members'] = id.members;
                     entry['payment']=id.eventName.verifiedPayment;
+                    // console.log(entry);
                     return entry;
                 }
                 else return { 'phone': id.phone, 'members': id.members, 'teamName': id.teamName ,'payment':id.eventName.verifiedPayment}
