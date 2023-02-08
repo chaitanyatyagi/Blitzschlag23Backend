@@ -15,7 +15,7 @@ const worksheetColumns = [
 ] 
 const exportToExcel = async (raw_data, worksheetColumns, worksheetname, filePath, res) => {
     const data = raw_data.map((user) => {
-        return [user.name, user.email, user.instituteId, user.blitzId, user.phone, user.teamName, user.members,user.payment];
+        return [user.name, user.email, user.instituteId, user.blitzId, user.phone, user.teamName, user.members, user.payment];
     })
     const workbook = xlsx.utils.book_new();
     const worksheetdata = [
@@ -40,7 +40,6 @@ exports.fetchList = async (req, res, next) => {
         console.log(data);
         const array = await Promise.all(
             data.map(async (id, index) => {
-                // console.log("hey", id.userId);
                 const entry = await User.findById(id.userId, { name: 1, email: 1, blitzId: 1, instituteId: 1, phone: 1, _id: 0 });
                 // console.log("entry", entry);
                 if (entry) {
@@ -51,14 +50,14 @@ exports.fetchList = async (req, res, next) => {
                     // console.log(entry);
                     return entry;
                 }
-                else return { 'phone': id.phone, 'members': id.members, 'teamName': id.teamName ,'payment':id.eventName.verifiedPayment}
+                else return { 'phone': id.phone, 'members': id.members, 'teamName': id.teamName, 'payment': id.eventName.verifiedPayment }
             })
         );
         if (ename.length > 15) {
             ename = ename.slice(0, 15);
         }
         // console.log(ename);
-        console.log(array);
+        // console.log(array);
         await exportToExcel(array, worksheetColumns, `Registrations--${ename}`, `excels/${ename}.xlsx`, res);
 
     }
