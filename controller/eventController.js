@@ -11,12 +11,12 @@ const worksheetColumns = [
     "Mobile",
     "teamName",
     'members',
-    "Payment Done"
+    'payment'
 ]
 
 const exportToExcel = async (raw_data, worksheetColumns, worksheetname, filePath, res) => {
     const data = raw_data.map((user) => {
-        return [user.name, user.email, user.instituteId, user.blitzId, user.phone, user.teamName, user.members];
+        return [user.name, user.email, user.instituteId, user.blitzId, user.phone, user.teamName, user.members, user.payment];
     })
     const workbook = xlsx.utils.book_new();
     const worksheetdata = [
@@ -36,8 +36,8 @@ exports.fetchList = async (req, res, next) => {
         return res.sendStatus(400);
     }
     try {
-        const data = await Registration.find({ "eventName.name": ename }, { userId: 1, _id: 0, phone: 1, teamName: 1, members: 1, "eventName.verifiedPayment": 1 })
-        // console.log(data);
+        const data = await Registration.find({ "eventName.name": ename })
+        console.log(data);
         const array = await Promise.all(
             data.map(async (id, index) => {
                 const entry = await User.findById(id.userId, { name: 1, email: 1, blitzId: 1, instituteId: 1, phone: 1, _id: 0 });
@@ -46,9 +46,10 @@ exports.fetchList = async (req, res, next) => {
                     entry['phone'] = id.phone;
                     entry['teamName'] = id.teamName;
                     entry['members'] = id.members;
+                    entry['payment'] = id.eventName.verifiedPayment;
                     return entry;
                 }
-                else return { 'phone': id.phone, 'members': id.members, 'teamName': id.teamName }
+                else return { 'phone': id.phone, 'members': id.members, 'teamName': id.teamName, 'payment': id.eventName.verifiedPayment }
             })
         );
         if (ename.length > 15) {
