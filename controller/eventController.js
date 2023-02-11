@@ -12,7 +12,7 @@ const worksheetColumns = [
     "teamName",
     'members',
     'payment'
-] 
+]
 const exportToExcel = async (raw_data, worksheetColumns, worksheetname, filePath, res) => {
     const data = raw_data.map((user) => {
         return [user.name, user.email, user.instituteId, user.blitzId, user.phone, user.teamName, user.members, user.payment];
@@ -22,7 +22,7 @@ const exportToExcel = async (raw_data, worksheetColumns, worksheetname, filePath
         worksheetColumns,
         ...data
     ]
-    
+
     const worksheet = xlsx.utils.aoa_to_sheet(worksheetdata);
     xlsx.utils.book_append_sheet(workbook, worksheet, worksheetname);
     await xlsx.writeFileAsync(path.resolve(filePath), workbook, {}, () => { res.download(path.resolve(filePath)) });
@@ -46,7 +46,7 @@ exports.fetchList = async (req, res, next) => {
                     entry['phone'] = id.phone;
                     entry['teamName'] = id.teamName;
                     entry['members'] = id.members;
-                    entry['payment']=id.eventName.verifiedPayment;
+                    entry['payment'] = id.eventName.verifiedPayment;
                     // console.log(entry);
                     return entry;
                 }
@@ -129,4 +129,30 @@ exports.collegeList = async (req, res, next) => {
         })
     )
     await exportToExcel(array, collegeWorksheetColumn, `Other College Registrations`, `excels/college-false.xlsx`, res);
+}
+
+const collegeWorkCol = [
+    "Name",
+    "Phone",
+    "Institute-Id",
+    "Email",
+    "Blitz-Id"
+]
+
+exports.allEventsList = async (req, res, next) => {
+    const data = await Registeration.find({ "eventName": true }, {
+        userId: 1, _id: 0, phone: 1, teamName: 1, members: 1
+    })
+    const array = await Promise.all(
+        data.map(async (user, indx) => {
+            const entry = await User.findById(user.userId, { name: 1, email: 1, phone: 1, _id: 0 })
+            if (entry) {
+                entry["phone"] = user.phone
+                entry["teamName"] = user.teamName
+                entry["members"] = user.members
+            }
+            else return { "phone": user.phone, "members": user.members }
+        })
+    )
+    await exportToExcel(array, collegeWorkCol, "Total Students", "excels/all-events.xlsx")
 }
